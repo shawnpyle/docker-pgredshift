@@ -30,7 +30,7 @@ RUN gosu nobody true && \
 
 ENV LANG=en_US.UTF-8 \
 	LC_ALL=en_US.UTF-8 \
-	PG_MAJOR=10 \
+	PG_MAJOR=11 \
 	PGDATA=/var/lib/postgresql/data
 
 RUN key="B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8"; \
@@ -42,7 +42,7 @@ RUN key="B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8"; \
 	echo "deb-src http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main $PG_MAJOR" >> /etc/apt/sources.list.d/pgdg.list; \
 	apt-get update
 
-RUN apt-get install -y postgresql-common postgresql-10 && \
+RUN apt-get install -y postgresql-common postgresql-$PG_MAJOR && \
 	sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf
 
 ENV PATH=$PATH:/usr/lib/postgresql/$PG_MAJOR/bin
@@ -65,11 +65,11 @@ COPY "docker-entrypoint.sh" "/usr/local/bin/docker-entrypoint.sh"
 RUN	chmod +x /usr/local/bin/docker-entrypoint.sh && \
 	ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
 
-### end postgres 10
+### end postgres $PG_MAJOR
 
 
 RUN apt-get install -y --no-install-recommends \
-	postgresql-server-dev-10 postgresql-plpython-10 postgresql-plpython3-10 \
+	postgresql-server-dev-$PG_MAJOR postgresql-plpython-$PG_MAJOR postgresql-plpython3-$PG_MAJOR \
 	python2 python-dev  python-pip  python-setuptools  python-wheel  \
 	python3 python3-dev python3-pip python3-setuptools python3-wheel
 
@@ -101,7 +101,7 @@ RUN sed "/shared_preload_libraries/d" -i /usr/share/postgresql/postgresql.conf.s
 
 # Clean up unused packages and temp files
 RUN rm -rf /var/lib/apt/lists/* && \
-	apt-get purge -y gcc make python2-dev python3-dev postgresql-server-dev-10 curl gnupg dirmngr && \
+	apt-get purge -y gcc make python2-dev python3-dev postgresql-server-dev-$PG_MAJOR curl gnupg dirmngr && \
 	apt-get autoremove -y --purge && \
 	rm -r /tmp/extensions
 
